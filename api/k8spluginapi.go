@@ -24,15 +24,18 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+        "fmt"
+        "crypto/tls"
 )
 
 func ListInstances() ([]string, error) {
 
-	MK8S_URI := os.Getenv("onap-multicloud-k8s")
-	MK8S_Port := os.Getenv("multicloud-k8s-port")
+	MK8S_URI := "https://10.211.1.20" //os.Getenv("onap-multicloud-k8s")
+	MK8S_Port := "30283" //os.Getenv("multicloud-k8s-port")
 
-	instancelist := MK8S_URI + ":" + MK8S_Port + con.MK8S_EP
-	req, err := http.NewRequest(http.MethodGet, instancelist, nil)
+	instanceapi := MK8S_URI + ":" + MK8S_Port + con.INSTANCE_EP
+        fmt.Println(instanceapi)
+	req, err := http.NewRequest(http.MethodGet, instanceapi, nil)
 	if err != nil {
 
 		log.Error("Something went wrong while listing resources - contructing request")
@@ -40,20 +43,24 @@ func ListInstances() ([]string, error) {
 	}
 
 	client := http.DefaultClient
+
+        //Disabling security checks
+        http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	res, err := client.Do(req)
 
 	if err != nil {
 		log.Error("Something went wrong while listing resources - executing request")
+                fmt.Println(err)
                 return []string{}, pkgerrors.New("Something went wrong while listing resources - executing request")
 	}
 
-	defer res.Body.Close()
-
+	//defer res.Body.Close()
+        fmt.Println("ListInstances : parsing the /instance api response")
 	decoder := json.NewDecoder(res.Body)
 	var rlist []con.InstanceMiniResponse
 	err = decoder.Decode(&rlist)
 
-	resourceList := utils.ParseListInstanceResponse(rlist)
+        resourceList := utils.ParseListInstanceResponse(rlist)
 
 	return resourceList, nil
 
@@ -61,11 +68,15 @@ func ListInstances() ([]string, error) {
 
 func GetConnection(cregion string) (con.Connection, error) {
 
-	MK8S_URI := os.Getenv("onap-multicloud-k8s")
-	MK8S_Port := os.Getenv("multicloud-k8s-port")
+        fmt.Println("GetConnection: started")
 
-	instancelist := MK8S_URI + ":" + MK8S_Port + con.MK8S_CEP + cregion
-	req, err := http.NewRequest(http.MethodGet, instancelist, nil)
+	MK8S_URI := "https://10.211.1.20" //os.Getenv("onap-multicloud-k8s")
+	MK8S_Port := "30283" //os.Getenv("multicloud-k8s-port")
+
+	connection_url := MK8S_URI + ":" + MK8S_Port + con.CONNECTION_EP + "/"+  cregion
+
+        fmt.Println(connection_url)
+	req, err := http.NewRequest(http.MethodGet, connection_url, nil)
 	if err != nil {
 
 		log.Error("Something went wrong while getting Connection resource - contructing request")
@@ -86,6 +97,8 @@ func GetConnection(cregion string) (con.Connection, error) {
 	var connection con.Connection
 	err = decoder.Decode(&connection)
 
+        fmt.Println("about to return connection")
+
 	return connection, nil
 
 }
@@ -95,7 +108,7 @@ func CheckStatusForEachInstance(instanceID string) (con.InstanceStatus, error) {
 	MK8S_URI := os.Getenv("onap-multicloud-k8s")
 	MK8S_Port := os.Getenv("multicloud-k8s-port")
 
-	instancelist := MK8S_URI + ":" + MK8S_Port + con.MK8S_EP + instanceID + "/status"
+	instancelist := MK8S_URI + ":" + MK8S_Port + con.INSTANCE_EP + "/" +instanceID + "/status"
 
 	req, err := http.NewRequest(http.MethodGet, instancelist, nil)
 	if err != nil {
@@ -118,4 +131,29 @@ func CheckStatusForEachInstance(instanceID string) (con.InstanceStatus, error) {
 	err = decoder.Decode(&instStatus)
 
 	return instStatus, nil
+}
+
+func DummyStatusResponse(instanceID string) (con.DummyStatus, error) {
+
+	dummyres := `{
+		"id": "zen_goldberg",
+		"request": {
+			"rb-name": "testing",
+			"rb-version": "1",
+			"profile-name": "testing_profile",
+			"cloud-region": "k8sregion",
+			"labels": null,
+			"override-values": null
+		},
+		"namespace": "default",
+		"clusterip": "10.211.1.20",
+		"port": "677"
+	}`
+
+        var status con.DummyStatus
+
+	json.Unmarshal([]byte(dummyres), &status)
+
+       return status, nil
+
 }

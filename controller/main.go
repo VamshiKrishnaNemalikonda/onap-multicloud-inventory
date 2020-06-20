@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/signal"
 	"time"
+        "fmt"
 )
 
 /* Root function which periodically polls status api for all the instances in the k8splugin and update the status information accordingly to AAI  */
@@ -36,13 +37,18 @@ func QueryAAI() {
 
 }
 
-func CheckInstanceStatus(instanceList []string) []con.InstanceStatus {
+func CheckInstanceStatus(instanceList []string) []con.DummyStatus {
 
-	var instStatusList []con.InstanceStatus
+        fmt.Println("CheckInstanceStatus: started")
+	//var instStatusList []con.InstanceStatus
+        var instStatusList []con.DummyStatus
 
 	for _, instance := range instanceList {
 
-		instanceStatus,_ := executor.CheckStatusForEachInstance(string(instance))
+                fmt.Println("Checking status for instance: ")
+
+		//instanceStatus,_ := executor.CheckStatusForEachInstance(string(instance))
+                instanceStatus,_ := executor.DummyStatusResponse(string(instance))
 
 		instStatusList = append(instStatusList, instanceStatus)
 
@@ -53,13 +59,20 @@ func CheckInstanceStatus(instanceList []string) []con.InstanceStatus {
 
 func PushPodInfoToAAI(podList []con.PodInfoToAAI) {
 
+        fmt.Println("PushPodInfoToAAI: started")
+
+        fmt.Println(len(podList))
 	var relList []con.RelationList
 
 	for _, pod := range podList {
 
+               fmt.Println(pod.CloudRegion)
+               fmt.Println(pod.ProvStatus)
+
 		connection,_ := executor.GetConnection(pod.CloudRegion)
 
 		tenantId := executor.GetTenant(connection.CloudOwner, pod.CloudRegion)
+                fmt.Println(tenantId)
 
 		vserverID := executor.PushVservers(pod, connection.CloudOwner, pod.CloudRegion, tenantId)
 

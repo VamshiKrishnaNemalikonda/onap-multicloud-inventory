@@ -28,13 +28,13 @@ const (
 
 const (
 	AAI_EP   = "/aai/v14"
-	AAI_CREP = "/cloud-infrastructure/cloud-regions/"
+	AAI_CREP = "/cloud-infrastructure/cloud-regions/cloud-region/"
 	AAI_NEP  = "/network/generic-vnfs/generic-vnf/"
 )
 
 const (
-	MK8S_EP  = "/api/multicloud-k8s/v1/v1/instance/"
-	MK8S_CEP = "/connectivity-info"
+	INSTANCE_EP  = "/api/multicloud-k8s/v1/v1/instance"
+	CONNECTION_EP = "/api/multicloud-k8s/v1/v1/connectivity-info"
 )
 
 type PodInfoToAAI struct {
@@ -42,7 +42,7 @@ type PodInfoToAAI struct {
 	VserverName2               string
 	ProvStatus                 string
 	I3InterfaceIPv4Address     string
-	I3InterfaceIPvPrefixLength int32
+	I3InterfaceIPvPrefixLength string
 	VnfId                      string
 	VfmId                      string
 	CloudRegion                string
@@ -133,5 +133,13 @@ type Connection struct {
 
 type ConnectivityRecordList struct {
         ConnectivityRecords []map[string]string `json:"connectivity-records"`
+}
+
+type DummyStatus struct {
+        ID        string          `json:"id"`
+        Request   InstanceRequest `json:"request"`
+        Namespace string          `json:"namespace"`
+        ClusterIP string	  `json:"clusterip"`
+        Port      string	  `json:"port"`
 }
 

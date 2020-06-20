@@ -17,8 +17,9 @@ import (
 	con "github.com/onap/multicloud-k8s/src/inventory/constants"
 	//k8splugin "github.com/onap/multicloud-k8s/src/k8splugin/internal/app"
 	"net/http"
-	"os"
-	"reflect"
+	//"os"
+	//"reflect"
+        "fmt"
 )
 
 /* Building relationship json to attach vserver details to vf-module*/
@@ -48,7 +49,29 @@ func ParseListInstanceResponse(rlist []con.InstanceMiniResponse) []string {
 }
 
 /* Parse status api response to pull required information like Pod name, Profile name, namespace, ip details, vnf-id and vf-module-id*/
-func ParseStatusInstanceResponse(instanceStatusses []con.InstanceStatus) []con.PodInfoToAAI {
+func ParseStatusInstanceResponse(instanceStatusses []con.DummyStatus) []con.PodInfoToAAI {
+
+        fmt.Println("ParseStatusInstanceResponse: started")
+
+	//var podList []con.PodInfoToAAI
+
+        podList := make([]con.PodInfoToAAI, len(instanceStatusses))
+
+        for _, status := range instanceStatusses {
+
+            var pod con.PodInfoToAAI
+			pod.ProvStatus = status.Namespace
+			pod.I3InterfaceIPv4Address = status.ClusterIP
+			pod.I3InterfaceIPvPrefixLength = status.Port
+			pod.VserverName2 = status.Request.ProfileName
+			pod.CloudRegion = status.Request.CloudRegion
+                        pod.VserverName = status.ID
+           podList = append(podList, pod)
+
+	}
+
+
+        /* fmt.Println("ParseStatusInstanceResponse: started")
 
 	var infoToAAI []con.PodInfoToAAI
 
@@ -102,13 +125,17 @@ func ParseStatusInstanceResponse(instanceStatusses []con.InstanceStatus) []con.P
 
 	}
 
-	return infoToAAI
-
+	return infoToAAI */
+    
+        return podList
+ 
 }
+
+
 
 /* this sets http headers to request object*/
 func SetRequestHeaders(req *http.Request) {
-	authorization := os.Getenv("authorization")
+	authorization := "Basic QUFJOkFBSQ==" //os.Getenv("authorization")
 
 	req.Header.Set("X-FromAppId", con.XFromAppId)
 	req.Header.Set("Content-Type", con.ContentType)
@@ -117,3 +144,5 @@ func SetRequestHeaders(req *http.Request) {
 	req.Header.Set("Authorization", authorization)
 
 }
+
+

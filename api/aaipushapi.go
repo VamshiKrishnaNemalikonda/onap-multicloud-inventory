@@ -23,7 +23,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
+	//"strconv"
+        "fmt"
 )
 
 /* Pushes each pod related details as vservers inot A&AI
@@ -53,21 +54,27 @@ import (
 */
 func PushVservers(podInfo con.PodInfoToAAI, cloudOwner, cloudRegion, tenantId string) string {
 
-	AAI_URI := os.Getenv("onap-aai")
-	AAI_Port := os.Getenv("aai-port")
+       fmt.Println("PushVservers: started")
 
-	payload := "{\"vserver-name\":" + "\"" + podInfo.VserverName + "\"" + ", \"vserver-name2\":" + "\"" + podInfo.VserverName2 + "\"" + ", \"prov-status\":" + "\"" + podInfo.ProvStatus + "\"" + ",\"vserver-selflink\":" + "\"example-vserver-selflink-val-57201\", \"l-interfaces\": {\"l-interface\": [{\"interface-name\": \"example-interface-name-val-20080\",\"is-port-mirrored\": true,\"in-maint\": true,\"is-ip-unnumbered\": true,\"l3-interface-ipv4-address-list\": [{\"l3-interface-ipv4-address\":" + "\"" + podInfo.I3InterfaceIPv4Address + "\"" + ",\"l3-interface-ipv4-prefix-length\":" + "\"" + strconv.FormatInt(int64(podInfo.I3InterfaceIPvPrefixLength), 10) + "\"" + "}]}]}}"
+	AAI_URI := "https://10.211.1.20" //os.Getenv("onap-aai")
+	AAI_Port := "30233" //os.Getenv("aai-port")
+
+	payload := "{\"vserver-name\":" + "\"" + podInfo.VserverName + "\"" + ", \"vserver-name2\":" + "\"" + podInfo.VserverName2 + "\"" + ", \"prov-status\":" + "\"" + podInfo.ProvStatus + "\"" + ",\"vserver-selflink\":" + "\"example-vserver-selflink-val-57201\", \"l-interfaces\": {\"l-interface\": [{\"interface-name\": \"example-interface-name-val-20080\",\"is-port-mirrored\": true,\"in-maint\": true,\"is-ip-unnumbered\": true,\"l3-interface-ipv4-address-list\": [{\"l3-interface-ipv4-address\":" + "\"" + podInfo.I3InterfaceIPv4Address + "\"" + ",\"l3-interface-ipv4-prefix-length\":" + "\"" + podInfo.I3InterfaceIPvPrefixLength + "\"" + "}]}]}}"
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	url := AAI_URI + ":" + AAI_Port + con.AAI_EP + "cloud-region/" + cloudOwner + "/" + cloudRegion + "/tenants/tenant/" + tenantId + "/vservers/vserver/" + podInfo.VserverName
+	//url := AAI_URI + ":" + AAI_Port + con.AAI_EP + "cloud-region/" + cloudOwner + "/" + cloudRegion + "/tenants/tenant/" + tenantId + "/vservers/vserver/" + podInfo.VserverName
+
+        url := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP  + "CloudOwner/RegionOne" + "/tenants/tenant/" + tenantId + "/vservers/vserver/" + podInfo.VserverName
 
 	var jsonStr = []byte(payload)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 
+        fmt.Println(url)
+
 	if err != nil {
-		log.Error("Error while constructing Vserver PUT request")
+		fmt.Println("Error while constructing Vserver PUT request")
 		return ""
 	}
 
@@ -76,7 +83,7 @@ func PushVservers(podInfo con.PodInfoToAAI, cloudOwner, cloudRegion, tenantId st
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error("Error while executing Vserver PUT api")
+		fmt.Println("Error while executing Vserver PUT api")
 		return ""
 	}
 	defer resp.Body.Close()

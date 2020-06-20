@@ -17,24 +17,29 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	con "github.com/onap/multicloud-k8s/src/inventory/constants"
-	log "github.com/onap/multicloud-k8s/src/inventory/logutils"
+	//log "github.com/onap/multicloud-k8s/src/inventory/logutils"
 	util "github.com/onap/multicloud-k8s/src/inventory/utils"
 	"io/ioutil"
 	"net/http"
-	"os"
+	//"os"
+        "fmt"
 )
 
 func GetTenant(cloudOwner, cloudRegion string) string {
 
-	AAI_URI := os.Getenv("onap-aai")
-	AAI_Port := os.Getenv("aai-port")
+       fmt.Println("GetTenant: started")
+
+	AAI_URI := "https://10.211.1.20" //os.Getenv("onap-aai")
+	AAI_Port := "30233" //os.Getenv("aai-port")
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	apiToCR := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP + "cloud-region/" + cloudOwner + "/" + cloudRegion + "?depth=all"
-	req, err := http.NewRequest(http.MethodGet, apiToCR, nil)
+	//tenant_api := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP + cloudOwner + "/" + cloudRegion + "?depth=1"
+        tenant_api := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP + "CloudOwner/RegionOne" + "?depth=1"
+        fmt.Println(tenant_api)
+        req, err := http.NewRequest(http.MethodGet, tenant_api, nil)
 	if err != nil {
-		log.Error("Error while constructing request for Tenant API")
+		fmt.Println("Error while constructing request for Tenant API")
 		return ""
 
 	}
@@ -45,7 +50,7 @@ func GetTenant(cloudOwner, cloudRegion string) string {
 	res, err := client.Do(req)
 
 	if err != nil {
-		log.Error("Error while executing request for Tenant API")
+	        fmt.Println("Error while executing request for Tenant API")
 		return ""
 	}
 
@@ -54,7 +59,7 @@ func GetTenant(cloudOwner, cloudRegion string) string {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 
-		log.Error("Can't read Tenant response")
+		fmt.Println("Can't read Tenant response")
 		return ""
 
 	}
@@ -63,8 +68,12 @@ func GetTenant(cloudOwner, cloudRegion string) string {
 
 	json.Unmarshal([]byte(body), &tenant)
 
+        fmt.Println("Tenant unmarshalled")
+
 	for k, v := range tenant.Tenants {
+                fmt.Println(k)
 		if k == "tenant" {
+                fmt.Println("tenant found")
 			for _, val := range v {
 				return val.TenantId
 
