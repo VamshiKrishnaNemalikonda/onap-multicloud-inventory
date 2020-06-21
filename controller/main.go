@@ -32,7 +32,7 @@ func QueryAAI() {
 		statusList := CheckInstanceStatus(instanceList)
 		podList := utils.ParseStatusInstanceResponse(statusList)
 		PushPodInfoToAAI(podList)
-		time.Sleep(360000 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 
 }
@@ -61,25 +61,21 @@ func PushPodInfoToAAI(podList []con.PodInfoToAAI) {
 
         fmt.Println("PushPodInfoToAAI: started")
 
-        fmt.Println(len(podList))
-	var relList []con.RelationList
+	//var relList []con.RelationList
 
 	for _, pod := range podList {
-
-               fmt.Println(pod.CloudRegion)
-               fmt.Println(pod.ProvStatus)
 
 		connection,_ := executor.GetConnection(pod.CloudRegion)
 
 		tenantId := executor.GetTenant(connection.CloudOwner, pod.CloudRegion)
                 fmt.Println(tenantId)
 
-		vserverID := executor.PushVservers(pod, connection.CloudOwner, pod.CloudRegion, tenantId)
+		executor.PushVservers(pod, connection.CloudOwner, pod.CloudRegion, tenantId)
 
-		rl := utils.BuildRelationshipDataForVFModule(pod.VserverName, vserverID, connection.CloudOwner, pod.CloudRegion, tenantId)
-		relList = append(relList, rl)
+		//rl := utils.BuildRelationshipDataForVFModule(pod.VserverName, vserverID, connection.CloudOwner, pod.CloudRegion, tenantId)
+		//relList = append(relList, rl)
 
-		executor.LinkVserverVFM(pod.VnfId, pod.VfmId, connection.CloudOwner, pod.CloudRegion, tenantId, relList)
+		//executor.LinkVserverVFM(pod.VnfId, pod.VfmId, connection.CloudOwner, pod.CloudRegion, tenantId, relList)
 	}
 
 }

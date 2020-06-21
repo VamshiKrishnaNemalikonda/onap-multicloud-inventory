@@ -36,7 +36,6 @@ func GetTenant(cloudOwner, cloudRegion string) string {
 
 	//tenant_api := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP + cloudOwner + "/" + cloudRegion + "?depth=1"
         tenant_api := AAI_URI + ":" + AAI_Port + con.AAI_EP + con.AAI_CREP + "CloudOwner/RegionOne" + "?depth=1"
-        fmt.Println(tenant_api)
         req, err := http.NewRequest(http.MethodGet, tenant_api, nil)
 	if err != nil {
 		fmt.Println("Error while constructing request for Tenant API")
@@ -67,8 +66,6 @@ func GetTenant(cloudOwner, cloudRegion string) string {
 	var tenant con.Tenant
 
 	json.Unmarshal([]byte(body), &tenant)
-
-        fmt.Println("Tenant unmarshalled")
 
 	for k, v := range tenant.Tenants {
                 fmt.Println(k)

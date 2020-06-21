@@ -19,7 +19,7 @@ deploy: build
 build: clean 
 	CGO_ENABLED=0 GOOS=$(PLATFORM) GOARCH=amd64
 	go build -a -ldflags '-extldflags "-static"' \
-	-o $(PWD)/$(BINARY) controller/main.go
+	-o $(PWD)/build/bin/$(BINARY) controller/main.go
 
 deploy: build
 

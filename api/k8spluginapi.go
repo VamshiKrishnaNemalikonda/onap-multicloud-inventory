@@ -97,8 +97,6 @@ func GetConnection(cregion string) (con.Connection, error) {
 	var connection con.Connection
 	err = decoder.Decode(&connection)
 
-        fmt.Println("about to return connection")
-
 	return connection, nil
 
 }

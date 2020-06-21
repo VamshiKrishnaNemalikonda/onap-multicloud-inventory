@@ -20,6 +20,7 @@ import (
 	//"os"
 	//"reflect"
         "fmt"
+        "github.com/thanhpk/randstr"
 )
 
 /* Building relationship json to attach vserver details to vf-module*/
@@ -65,7 +66,7 @@ func ParseStatusInstanceResponse(instanceStatusses []con.DummyStatus) []con.PodI
 			pod.I3InterfaceIPvPrefixLength = status.Port
 			pod.VserverName2 = status.Request.ProfileName
 			pod.CloudRegion = status.Request.CloudRegion
-                        pod.VserverName = status.ID
+                        pod.VserverName = randstr.Hex(16) //status.ID
            podList = append(podList, pod)
 
 	}
